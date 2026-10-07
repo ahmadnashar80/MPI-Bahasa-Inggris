@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPI: My Neighbourhood - Linking Ideas with AND, BUT & SO</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            800: '#1e3a8a',
+                            900: '#0f172a'
+                        },
+                        grammarAnd: '#10b981',
+                        grammarBut: '#f59e0b',
+                        grammarSo: '#3b82f6',
+                    },
+                    boxShadow: {
+                        'glow': '0 0 25px rgba(37, 99, 235, 0.25)',
+                        'card': '0 10px 30px -5px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom UI Styling & Transitions */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .slide-enter {
+            animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .pulse-subtle {
+            animation: pulseSubtle 2.5s infinite;
+        }
+        @keyframes pulseSubtle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.95; transform: scale(1.02); }
+        }
+        .projector-contrast {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between select-none overflow-x-hidden">
+
+    <!-- TOP NAVBAR & LESSON MAP -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goToSlide(0)">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-bold text-lg shadow-md">
+                    <i class="fa-solid fa-city text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-base leading-tight tracking-wide text-white">MY NEIGHBOURHOOD</h1>
+                    <p class="text-xs text-blue-300 font-medium">Cambridge Aligned • 2 JP (70 Mins)</p>
+                </div>
+            </div>
+
+            <!-- Stopwatch Timer (Optional Co-Pilot Feature) -->
+            <div class="hidden sm:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <i class="fa-regular fa-clock text-blue-400"></i>
+                <span id="timerDisplay" class="font-mono text-sm font-semibold text-slate-200">00:00</span>
+                <button onclick="toggleTimer()" id="timerBtn" title="Play/Pause Timer" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-slate-300 transition">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button onclick="resetTimer()" title="Reset Timer" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-slate-300 transition">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+
+            <!-- Top Actions: Teacher Mode & Listening Locker -->
+            <div class="flex items-center space-x-2">
+                <button onclick="openListeningModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-headphones text-purple-400"></i>
+                    <span>Listening</span>
+                    <i class="fa-solid fa-lock text-[10px] text-amber-400"></i>
+                </button>
+                <button onclick="toggleTeacherDrawer()" id="teacherToggleBtn" class="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-md flex items-center gap-2 transition transform active:scale-95">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>TEACHER MODE</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- LESSON MAP PROGRESS BAR -->
+        <div id="lessonMapBar" class="bg-slate-950/90 border-t border-slate-800/80 px-4 py-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <div class="max-w-7xl mx-auto flex items-center justify-between min-w-[760px] text-xs">
+                <!-- Lesson Steps JS Rendered Here -->
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APPLICATION STAGE -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center relative">
+        <div id="slideStage" class="w-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden min-h-[580px] flex flex-col justify-between slide-enter relative">
+            <!-- Dynamic Slide Content Inserted via JS -->
+        </div>
+    </main>
+
+    <!-- BOTTOM CO-PILOT TOOLBAR -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-white py-3 px-4 sticky bottom-0 z-30">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Action Navigation Buttons -->
+            <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
+                <button onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm flex items-center gap-2 border border-slate-700 transition">
+                    <i class="fa-solid fa-arrow-left"></i> BACK
+                </button>
+                <button onclick="goToSlide(0)" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm border border-slate-700 transition" title="Go Home">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <button onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex items-center gap-2 shadow-md shadow-blue-900/40 transition">
+                    NEXT <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Co-Pilot Prompt Hotkeys for Teacher -->
+            <div class="flex items-center gap-1.5 flex-wrap justify-center text-xs">
+                <button onclick="triggerCopilotModal('say')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-blue-900/60 text-blue-300 rounded-lg border border-slate-700 flex items-center gap-1 transition">
+                    <i class="fa-solid fa-comment"></i> WHAT SHOULD I SAY?
+                </button>
+                <button onclick="triggerCopilotModal('hint')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-amber-900/60 text-amber-300 rounded-lg border border-slate-700 flex items-center gap-1 transition">
+                    <i class="fa-solid fa-lightbulb"></i> NEED A HINT?
+                </button>
+                <button onclick="triggerCopilotModal('answer')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-emerald-900/60 text-emerald-300 rounded-lg border border-slate-700 flex items-center gap-1 transition">
+                    <i class="fa-solid fa-key"></i> SHOW ANSWER
+                </button>
+                <button onclick="triggerCopilotModal('notebook')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-purple-900/60 text-purple-300 rounded-lg border border-slate-700 flex items-center gap-1 transition">
+                    <i class="fa-solid fa-book-open"></i> NOTEBOOK TASK
+                </button>
+                <button onclick="extendTime(5)" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition" title="Extend Activity Time by 5 Mins">
+                    ➕ EXTEND +5M
+                </button>
+            </div>
+
+            <!-- Timing Badge & Activity Status -->
+            <div class="flex items-center space-x-2 text-xs">
+                <span id="suggestedTimeBadge" class="bg-blue-950 text-blue-300 border border-blue-800 px-2.5 py-1 rounded-md font-medium">
+                    Suggested: 5 min
+                </span>
+                <span id="activityStatusBadge" class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">
+                    In Progress
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TEACHER MODE SIDE DRAWER -->
+    <div id="teacherDrawer" class="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-slate-900 text-slate-100 shadow-2xl border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-hidden">
+        
+        <!-- Drawer Header -->
+        <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-user-gear text-amber-400 text-lg"></i>
+                <h2 class="font-display font-bold text-base text-white">TEACHER CO-PILOT DASHBOARD</h2>
+            </div>
+            <button onclick="toggleTeacherDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Content Tabs -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-5">
+            
+            <!-- Tab Navigation -->
+            <div class="flex bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                <button onclick="switchTeacherTab('overview')" id="tabBtnOverview" class="flex-1 py-2 rounded-lg bg-blue-600 text-white transition">Lesson Overview</button>
+                <button onclick="switchTeacherTab('script')" id="tabBtnScript" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">Current Script</button>
+                <button onclick="switchTeacherTab('assessment')" id="tabBtnAssessment" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">Quick Matrix</button>
+            </div>
+
+            <!-- Tab 1: Lesson Overview -->
+            <div id="teacherTabOverview" class="space-y-4">
+                <div class="bg-slate-800/70 p-3.5 rounded-xl border border-slate-700/80">
+                    <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">🎯 Learning Objectives</h3>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4">
+                        <li>Identify places in a neighbourhood context.</li>
+                        <li>Understand functions of linking words: <strong class="text-emerald-400">AND</strong> (addition), <strong class="text-amber-400">BUT</strong> (contrast), <strong class="text-blue-400">SO</strong> (result).</li>
+                        <li>Construct meaningful compound sentences about neighbourhoods verbally and in notebooks.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-800/70 p-3.5 rounded-xl border border-slate-700/80">
+                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">⏱️ 70-Minute JP Breakdown</h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="p-2 rounded bg-slate-900/60 border border-slate-800">
+                            <span class="font-bold text-amber-300">JP 1 (35 Min)</span>: Context (7m) → Speaking (8m) → Reading Anita & Blanca (20m)
+                        </div>
+                        <div class="p-2 rounded bg-slate-900/60 border border-slate-800">
+                            <span class="font-bold text-blue-300">JP 2 (35 Min)</span>: Reading Check (5m) → Grammar Detective & Discovery (15m) → Guided Practice & Game (10m) → Production & Exit (5m)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Current Script & Prompts -->
+            <div id="teacherTabScript" class="hidden space-y-3">
+                <div class="bg-slate-800/90 p-3.5 rounded-xl border border-blue-500/30">
+                    <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-blue-900 text-blue-200">Teacher Says:</span>
+                    <p id="copilotScriptSay" class="text-xs text-slate-100 font-medium italic mt-2 leading-relaxed">
+                        "Look at the picture. What places do you see near your house?"
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/90 p-3.5 rounded-xl border border-emerald-500/30">
+                    <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-900 text-emerald-200">Ask Students:</span>
+                    <p id="copilotScriptAsk" class="text-xs text-slate-200 mt-2">
+                        "Which place is your favourite and why?"
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/90 p-3.5 rounded-xl border border-purple-500/30">
+                    <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-purple-900 text-purple-200">Expected Response:</span>
+                    <p id="copilotScriptResponse" class="text-xs text-slate-300 mt-2">
+                        "I like the park because I play football there."
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/90 p-3.5 rounded-xl border border-amber-500/30">
+                    <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-900 text-amber-200">If Students Struggle:</span>
+                    <p id="copilotScriptStruggle" class="text-xs text-slate-300 mt-2">
+                        "Point to the image and offer sentence stems: 'There is a...'"
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tab 3: Quick Assessment Matrix (Teacher Reflection) -->
+            <div id="teacherTabAssessment" class="hidden space-y-4">
+                <p class="text-xs text-slate-400">Record classroom mastery observations during or after activities:</p>
+                
+                <!-- AND Rating -->
+                <div class="bg-slate-800 p-3 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="font-bold text-xs text-emerald-400">AND (Addition)</span>
+                        <p class="text-[10px] text-slate-400">Idea + Idea</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="setAssessment('and', 'good')" id="btnAndGood" class="px-2 py-1 bg-slate-700 hover:bg-emerald-600 rounded text-xs">🟢 Good</button>
+                        <button onclick="setAssessment('and', 'dev')" id="btnAndDev" class="px-2 py-1 bg-slate-700 hover:bg-amber-600 rounded text-xs">🟡 Dev</button>
+                        <button onclick="setAssessment('and', 'review')" id="btnAndRev" class="px-2 py-1 bg-slate-700 hover:bg-rose-600 rounded text-xs">🔴 Review</button>
+                    </div>
+                </div>
+
+                <!-- BUT Rating -->
+                <div class="bg-slate-800 p-3 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="font-bold text-xs text-amber-400">BUT (Contrast)</span>
+                        <p class="text-[10px] text-slate-400">Different idea</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="setAssessment('but', 'good')" id="btnButGood" class="px-2 py-1 bg-slate-700 hover:bg-emerald-600 rounded text-xs">🟢 Good</button>
+                        <button onclick="setAssessment('but', 'dev')" id="btnButDev" class="px-2 py-1 bg-slate-700 hover:bg-amber-600 rounded text-xs">🟡 Dev</button>
+                        <button onclick="setAssessment('but', 'review')" id="btnButRev" class="px-2 py-1 bg-slate-700 hover:bg-rose-600 rounded text-xs">🔴 Review</button>
+                    </div>
+                </div>
+
+                <!-- SO Rating -->
+                <div class="bg-slate-800 p-3 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="font-bold text-xs text-blue-400">SO (Result)</span>
+                        <p class="text-[10px] text-slate-400">Reason → Consequence</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="setAssessment('so', 'good')" id="btnSoGood" class="px-2 py-1 bg-slate-700 hover:bg-emerald-600 rounded text-xs">🟢 Good</button>
+                        <button onclick="setAssessment('so', 'dev')" id="btnSoDev" class="px-2 py-1 bg-slate-700 hover:bg-amber-600 rounded text-xs">🟡 Dev</button>
+                        <button onclick="setAssessment('so', 'review')" id="btnSoRev" class="px-2 py-1 bg-slate-700 hover:bg-rose-600 rounded text-xs">🔴 Review</button>
+                    </div>
+                </div>
+
+                <!-- Assessment Recommendation Banner -->
+                <div id="assessmentRecommendation" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                    <span class="text-xs font-bold text-slate-300">RECOMMENDATION:</span>
+                    <div id="assessmentStatusText" class="text-sm font-extrabold text-blue-400 mt-1">EVALUATING CLASS...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Drawer Footer Controls -->
+        <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+            <button onclick="markActivityStatus('completed')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
+                ✓ MARK COMPLETE
+            </button>
+            <button onclick="markActivityStatus('repeat')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition">
+                ↻ REPEAT ACTIVITY
+            </button>
+        </div>
+    </div>
+
+    <!-- CO-PILOT PROMPT OVERLAY MODAL -->
+    <div id="copilotModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative slide-enter">
+            <button onclick="closeCopilotModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center space-x-3 mb-4">
+                <div id="modalIconContainer" class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-comment"></i>
+                </div>
+                <h3 id="modalTitle" class="font-display font-bold text-lg text-slate-900">TEACHER CO-PILOT PROMPT</h3>
+            </div>
+            <div id="modalBody" class="text-slate-700 text-sm leading-relaxed space-y-3">
+                <!-- Dynamic Modal Content -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeCopilotModal()" class="px-5 py-2 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 transition">
+                    GOT IT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTENING NEXT LESSON LOCKED MODAL -->
+    <div id="listeningModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative slide-enter">
+            <div class="w-16 h-16 bg-purple-900/50 border border-purple-500/40 rounded-full flex items-center justify-center mx-auto mb-4 text-purple-300 text-2xl">
+                <i class="fa-solid fa-headphones"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white">🎧 LISTENING MODULE</h3>
+            <div class="my-3 inline-block px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
+                🔒 LOCKED - NEXT LESSON
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed my-3">
+                Listening is scheduled for the upcoming session. Today's focus is <strong>Reading, Discovery & Sentence Production</strong>.
+            </p>
+            <button onclick="closeListeningModal()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition">
+                BACK TO LESSON
+            </button>
+        </div>
+    </div>
+
+    <script>
+        
+        // Comprehensive Slide Database (19 Detailed Slides)
+        const slideData = [
+            // Slide 0: Cover
+            {
+                id: 'cover',
+                stepIndex: 0,
+                title: 'MY NEIGHBOURHOOD',
+                subtitle: 'Linking Ideas with AND, BUT & SO',
+                time: '2 Min',
+                type: 'cover',
+                copilot: {
+                    say: "Good morning class! Today we are exploring neighbourhoods and learning how to join our ideas smoothly using AND, BUT, and SO.",
+                    ask: "Who can tell me what is one special thing about your neighbourhood?",
+                    response: "There is a park near my house / It is quiet.",
+                    struggle: "Show pictures of shops, schools, and parks to prompt vocabulary."
+                }
+            },
+            // Slide 1: Context Activation
+            {
+                id: 'context',
+                stepIndex: 0,
+                title: 'CONTEXT ACTIVATION',
+                subtitle: 'What places are near your house?',
+                time: '5 Min',
+                type: 'context',
+                copilot: {
+                    say: "Look at this neighbourhood map. Click on the buildings to discover the English names for these places.",
+                    ask: "Which places do you have near your home?",
+                    response: "I have a school and a café near my house.",
+                    struggle: "Encourage repeating the word after clicking: 'Café', 'Sports Centre'."
+                }
+            },
+            // Slide 2: Speaking - What Makes a Good Neighbourhood?
+            {
+                id: 'speaking',
+                stepIndex: 1,
+                title: 'SPEAKING: GOOD OR NOT GOOD?',
+                subtitle: 'What makes a great neighbourhood to live in?',
+                time: '8 Min',
+                type: 'speaking',
+                copilot: {
+                    say: "I will show you different features of a neighbourhood. Decide: Is this GOOD or NOT GOOD for living?",
+                    ask: "Why do you think a football stadium is good or not good?",
+                    response: "It is good because I love sports / It is not good because it is too noisy.",
+                    struggle: "Emphasize that opinions have no wrong answers as long as they explain 'Why'."
+                }
+            },
+            // Slide 3: Interactive Neighbourhood Builder
+            {
+                id: 'builder',
+                stepIndex: 1,
+                title: 'NEIGHBOURHOOD BUILDER',
+                subtitle: 'Build your dream neighbourhood map and describe it',
+                time: '7 Min',
+                type: 'builder',
+                copilot: {
+                    say: "Let's build a neighbourhood on the screen together! Choose 4 or 5 places to add.",
+                    ask: "Now describe it: 'There is a... near my house.'",
+                    response: "My neighbourhood has a park, a café, and a supermarket.",
+                    struggle: "Provide sentence frames on screen for support."
+                }
+            },
+            // Slide 4: Reading - Anita & Blanca Intro
+            {
+                id: 'reading_intro',
+                stepIndex: 2,
+                title: 'READING: ANITA & BLANCA',
+                subtitle: 'First Reading: Read quickly (Skim & Scan)',
+                time: '8 Min',
+                type: 'reading_intro',
+                copilot: {
+                    say: "Read the texts about Anita and Blanca quickly in 1 minute. What is the text mainly about?",
+                    ask: "Who lives in a busy neighbourhood? Who lives in a quiet one?",
+                    response: "Anita lives in a busy neighbourhood. Blanca lives in a quiet one.",
+                    struggle: "Guide students to look for key adjectives: 'busy' and 'quiet'."
+                }
+            },
+            // Slide 5: Reading Check Questions
+            {
+                id: 'reading_check',
+                stepIndex: 2,
+                title: 'READING CHECK',
+                subtitle: 'Answer comprehension questions based on the text',
+                time: '7 Min',
+                type: 'reading_check',
+                copilot: {
+                    say: "Let's test our understanding! Think of the answer before we reveal it.",
+                    ask: "What does Blanca do every Saturday?",
+                    response: "She spends every Saturday at the library.",
+                    struggle: "Re-read sentence 3 in Blanca's paragraph."
+                }
+            },
+            // Slide 6: Grammar Detective
+            {
+                id: 'grammar_detective',
+                stepIndex: 3,
+                title: 'GRAMMAR DETECTIVE 🔎',
+                subtitle: 'Notice how AND, BUT, and SO connect ideas',
+                time: '5 Min',
+                type: 'grammar_detective',
+                copilot: {
+                    say: "Be a grammar detective! Look at the highlighted words in these sentences from the text.",
+                    ask: "What is AND doing here? What is BUT doing?",
+                    response: "AND joins two items. BUT shows a change or difference.",
+                    struggle: "Highlight the green, yellow, and blue colors."
+                }
+            },
+            // Slide 7: Discover AND
+            {
+                id: 'discover_and',
+                stepIndex: 4,
+                title: 'DISCOVER: AND',
+                subtitle: 'AND = ADD AN IDEA (TAMBAH)',
+                time: '4 Min',
+                type: 'discover_and',
+                copilot: {
+                    say: "AND is used when we want to add extra similar information.",
+                    ask: "Can you give an example with two places in your neighbourhood?",
+                    response: "There is a restaurant AND a café near my house.",
+                    struggle: "Use visual plus sign: 🍽️ + ☕"
+                }
+            },
+            // Slide 8: Discover BUT
+            {
+                id: 'discover_but',
+                stepIndex: 4,
+                title: 'DISCOVER: BUT',
+                subtitle: 'BUT = A DIFFERENT IDEA (TAPI / BERBEDA)',
+                time: '4 Min',
+                type: 'discover_but',
+                copilot: {
+                    say: "BUT introduces a contrasting or surprising idea.",
+                    ask: "Complete this: 'My neighbourhood is small, BUT...'",
+                    response: "...it is very beautiful.",
+                    struggle: "Show positive vs negative contrast cards."
+                }
+            },
+            // Slide 9: Discover SO
+            {
+                id: 'discover_so',
+                stepIndex: 4,
+                title: 'DISCOVER: SO',
+                subtitle: 'SO = RESULT / CONSEQUENCE (JADI / AKIBAT)',
+                time: '4 Min',
+                type: 'discover_so',
+                copilot: {
+                    say: "SO connects a reason to a result or action.",
+                    ask: "I am hungry, SO what do I do?",
+                    response: "...SO I eat at a restaurant.",
+                    struggle: "Think of Cause ➔ Effect."
+                }
+            },
+            // Slide 10: Guided Practice - Level 1
+            {
+                id: 'practice_l1',
+                stepIndex: 5,
+                title: 'GUIDED PRACTICE: LEVEL 1',
+                subtitle: 'Choose the correct linking word',
+                time: '3 Min',
+                type: 'practice',
+                level: 1,
+                copilot: {
+                    say: "Look at Sentence 1. Which word fits: AND, BUT, or SO?",
+                    ask: "Why did you choose AND?",
+                    response: "Because it adds a park to the school.",
+                    struggle: "Remind: Addition = AND."
+                }
+            },
+            // Slide 11: Guided Practice - Level 2 & 3
+            {
+                id: 'practice_l2',
+                stepIndex: 5,
+                title: 'GUIDED PRACTICE: LEVEL 2 & 3',
+                subtitle: 'Step up the challenge!',
+                time: '4 Min',
+                type: 'practice',
+                level: 2,
+                copilot: {
+                    say: "Read carefully! Look for contrast or results.",
+                    ask: "In sentence 3, is 'it is very quiet' a result?",
+                    response: "Yes, so we use SO.",
+                    struggle: "Check if the second part is a result of the first."
+                }
+            },
+            // Slide 12: Sentence Builder
+            {
+                id: 'sentence_builder',
+                stepIndex: 5,
+                title: 'SENTENCE BUILDER 🧩',
+                subtitle: 'Arrange words into a correct compound sentence',
+                time: '5 Min',
+                type: 'sentence_builder',
+                copilot: {
+                    say: "Reorder these word cards to make a complete, meaningful sentence.",
+                    ask: "Where does the linking word 'but' go?",
+                    response: "In the middle between the two main ideas.",
+                    struggle: "Put subject 'I' first."
+                }
+            },
+            // Slide 13: Quick Class Game
+            {
+                id: 'class_game',
+                stepIndex: 5,
+                title: 'QUICK CLASS GAME 🎮',
+                subtitle: 'AND, BUT or SO Challenge!',
+                time: '6 Min',
+                type: 'class_game',
+                copilot: {
+                    say: "Let's play Team A vs Team B! Select the answer for your team to score 10 stars!",
+                    ask: "Team A, what is your answer?",
+                    response: "BUT!",
+                    struggle: "Use SKIP if time is running short."
+                }
+            },
+            // Slide 14: Notebook Task / Production
+            {
+                id: 'production',
+                stepIndex: 6,
+                title: 'PRODUCTION: WRITE IN NOTEBOOK ✍️',
+                subtitle: 'Write 3 sentences about your own neighbourhood',
+                time: '6 Min',
+                type: 'production',
+                copilot: {
+                    say: "Open your notebooks! Write 3 sentences about your neighbourhood using AND, BUT, and SO.",
+                    ask: "Who wants to share their sentence with the class?",
+                    response: "My neighbourhood has a school AND a mosque.",
+                    struggle: "Direct students to copy the sentence frames on board."
+                }
+            },
+            // Slide 15: Fast Finisher Challenge
+            {
+                id: 'challenge',
+                stepIndex: 6,
+                title: 'CHALLENGE MODE 🔥',
+                subtitle: 'For students who finish early',
+                time: '3 Min',
+                type: 'challenge',
+                copilot: {
+                    say: "Finished early? Try the Super Challenge: write ONE sentence with TWO linking words!",
+                    ask: "Can anyone combine AND and BUT in one long sentence?",
+                    response: "My neighbourhood has a park AND a café, BUT it has no cinema.",
+                    struggle: "Give praise for extra effort!"
+                }
+            },
+            // Slide 16: Exit Ticket
+            {
+                id: 'exit_ticket',
+                stepIndex: 7,
+                title: 'EXIT TICKET 🎟️',
+                subtitle: 'Quick review before we conclude',
+                time: '3 Min',
+                type: 'exit_ticket',
+                copilot: {
+                    say: "Before we finish, answer these 3 quick matching questions and complete the final sentence.",
+                    ask: "What is AND used for? What is BUT? What is SO?",
+                    response: "AND = add, BUT = contrast, SO = result.",
+                    struggle: "Summarize keywords on screen."
+                }
+            }
+        ];
+
+        // Lesson Map Steps Definition
+        const lessonSteps = [
+            { id: 0, label: '① Context', short: 'Context' },
+            { id: 1, label: '② Speaking', short: 'Speaking' },
+            { id: 2, label: '③ Reading', short: 'Reading' },
+            { id: 3, label: '④ Notice', short: 'Notice' },
+            { id: 4, label: '⑤ Discover', short: 'Discover' },
+            { id: 5, label: '⑥ Practice', short: 'Practice' },
+            { id: 6, label: '⑦ Create', short: 'Create' },
+            { id: 7, label: '⑧ Exit Ticket', short: 'Exit' }
+        ];
+
+        // App State
+        let currentSlideIndex = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+        
+        // Game State
+        let teamAScore = 0;
+        let teamBScore = 0;
+        let currentGameQuestion = 0;
+
+        // Assessment State
+        let assessmentData = { and: null, but: null, so: null };
+
+        // Neighbourhood Builder State
+        let builtNeighborhood = ['🏠 House', '🏫 School', '🌳 Park'];
+
+        
+        // Window Load Handler
+        window.onload = function () {
+            renderLessonMap();
+            renderSlide();
+            updateCopilotScript();
+        };
+
+        // Render Lesson Map
+        function renderLessonMap() {
+            const container = document.getElementById('lessonMapBar').firstElementChild;
+            const currentStep = slideData[currentSlideIndex].stepIndex;
+
+            container.innerHTML = lessonSteps.map((step) => {
+                const isActive = step.id === currentStep;
+                const isPassed = step.id < currentStep;
+
+                return `
+                    <button onclick="jumpToStep(${step.id})" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold transition ${
+                        isActive
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-900/50 ring-2 ring-blue-400'
+                            : isPassed
+                            ? 'bg-slate-800 text-emerald-400 hover:bg-slate-700'
+                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                    }">
+                        <span>${step.label}</span>
+                        ${isActive ? '<span class="ml-1 text-[10px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full font-extrabold uppercase">HERE</span>' : ''}
+                    </button>
+                `;
+            }).join('<i class="fa-solid fa-chevron-right text-[10px] text-slate-700 mx-1"></i>');
+        }
+
+        // Jump directly to first slide of a step
+        function jumpToStep(stepId) {
+            const targetIndex = slideData.findIndex(s => s.stepIndex === stepId);
+            if (targetIndex !== -1) {
+                currentSlideIndex = targetIndex;
+                renderSlide();
+            }
+        }
+
+        // Navigation Functions
+        function nextSlide() {
+            if (currentSlideIndex < slideData.length - 1) {
+                currentSlideIndex++;
+                renderSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < slideData.length) {
+                currentSlideIndex = index;
+                renderSlide();
+            }
+        }
+
+        
+        function renderSlide() {
+            const stage = document.getElementById('slideStage');
+            const slide = slideData[currentSlideIndex];
+
+            // Update Header & Badge Information
+            document.getElementById('suggestedTimeBadge').innerText = `Suggested: ${slide.time}`;
+            renderLessonMap();
+            updateCopilotScript();
+
+            // Re-trigger CSS animation
+            stage.classList.remove('slide-enter');
+            void stage.offsetWidth; // trigger reflow
+            stage.classList.add('slide-enter');
+
+            // Render according to slide type
+            switch (slide.type) {
+                case 'cover':
+                    stage.innerHTML = renderCoverSlide(slide);
+                    break;
+                case 'context':
+                    stage.innerHTML = renderContextSlide(slide);
+                    break;
+                case 'speaking':
+                    stage.innerHTML = renderSpeakingSlide(slide);
+                    break;
+                case 'builder':
+                    stage.innerHTML = renderBuilderSlide(slide);
+                    break;
+                case 'reading_intro':
+                    stage.innerHTML = renderReadingIntroSlide(slide);
+                    break;
+                case 'reading_check':
+                    stage.innerHTML = renderReadingCheckSlide(slide);
+                    break;
+                case 'grammar_detective':
+                    stage.innerHTML = renderGrammarDetectiveSlide(slide);
+                    break;
+                case 'discover_and':
+                case 'discover_but':
+                case 'discover_so':
+                    stage.innerHTML = renderDiscoverSlide(slide);
+                    break;
+                case 'practice':
+                    stage.innerHTML = renderPracticeSlide(slide);
+                    break;
+                case 'sentence_builder':
+                    stage.innerHTML = renderSentenceBuilderSlide(slide);
+                    break;
+                case 'class_game':
+                    stage.innerHTML = renderClassGameSlide(slide);
+                    break;
+                case 'production':
+                    stage.innerHTML = renderProductionSlide(slide);
+                    break;
+                case 'challenge':
+                    stage.innerHTML = renderChallengeSlide(slide);
+                    break;
+                case 'exit_ticket':
+                    stage.innerHTML = renderExitTicketSlide(slide);
+                    break;
+                default:
+                    stage.innerHTML = `<div class="p-8 text-center">Slide content loading...</div>`;
+            }
+        }
+
+
+        // 1. COVER SLIDE
+        function renderCoverSlide(slide) {
+            return `
+                <div class="flex-1 p-8 md:p-12 flex flex-col justify-between bg-gradient-to-br from-slate-900 via-brand-900 to-slate-900 text-white rounded-2xl relative overflow-hidden">
+                    <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="flex justify-between items-center z-10">
+                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold uppercase tracking-wider">
+                            Interactive Textbook • Class VIII
+                        </span>
+                        <span class="text-xs text-slate-400 font-mono">Cambridge Approach</span>
+                    </div>
+
+                    <div class="my-auto z-10 space-y-4">
+                        <h1 class="font-display font-extrabold text-4xl sm:text-6xl tracking-tight text-white leading-none projector-contrast">
+                            MY NEIGHBOURHOOD
+                        </h1>
+                        <p class="text-xl sm:text-2xl font-medium text-blue-200">
+                            Linking Ideas with <span class="text-emerald-400 font-extrabold">AND</span>, <span class="text-amber-400 font-extrabold">BUT</span> & <span class="text-blue-400 font-extrabold">SO</span>
+                        </p>
+                        
+                        <!-- Visual Neighborhood Icons Grid -->
+                        <div class="flex flex-wrap gap-3 pt-4 text-2xl sm:text-3xl bg-slate-800/40 p-4 rounded-2xl border border-slate-700/50 w-fit">
+                            <span>🏠</span> <span>🏫</span> <span>🏪</span> <span>🍽️</span> <span>☕</span> <span>🌳</span> <span>⚽</span> <span>🏛️</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-800 z-10">
+                        <div class="text-xs text-slate-300 flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-info text-blue-400"></i>
+                            <span>Projector Friendly • 70-Minute Normal Mode (2 JP)</span>
+                        </div>
+                        <button onclick="nextSlide()" class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-base rounded-xl shadow-lg shadow-blue-600/30 transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                            LET'S START <i class="fa-solid fa-circle-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 2. CONTEXT ACTIVATION SLIDE
+        function renderContextSlide(slide) {
+            const places = [
+                { name: 'School', icon: '🏫', desc: 'Place to study' },
+                { name: 'Market', icon: '🏪', desc: 'Fresh food & goods' },
+                { name: 'Mosque', icon: '🕌', desc: 'Place of worship' },
+                { name: 'Restaurant', icon: '🍽️', desc: 'Delicious food' },
+                { name: 'Café', icon: '☕', desc: 'Coffee & snacks' },
+                { name: 'Park', icon: '🌳', desc: 'Green spaces' },
+                { name: 'Sports Centre', icon: '⚽', desc: 'Exercise & games' },
+                { name: 'Museum', icon: '🏛️', desc: 'History & art' },
+                { name: 'Supermarket', icon: '🛒', desc: 'Daily shopping' }
+            ];
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 1 • Context Activation</span>
+                                <h2 class="font-display font-extrabold text-2xl text-slate-900">What places are near your house?</h2>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full">Click items to reveal vocabulary</span>
+                        </div>
+
+                        <!-- Places Grid -->
+                        <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3 my-4">
+                            ${places.map(p => `
+                                <button onclick="revealPlaceVocab('${p.name}', '${p.desc}')" class="p-4 bg-white hover:bg-blue-50 border-2 border-slate-200 hover:border-blue-400 rounded-xl flex flex-col items-center justify-center text-center transition shadow-sm hover:shadow group">
+                                    <span class="text-3xl mb-1 transform group-hover:scale-110 transition">${p.icon}</span>
+                                    <span class="font-bold text-sm text-slate-800">${p.name}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Revealed Vocabulary Feedback Card -->
+                    <div id="vocabDetailCard" class="p-4 bg-blue-900 text-white rounded-xl flex items-center justify-between border border-blue-800 shadow-md">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">💡</span>
+                            <div>
+                                <h4 id="vocabTitle" class="font-bold text-base text-blue-200">Click any building icon above!</h4>
+                                <p id="vocabDesc" class="text-xs text-blue-300">Discover key neighbourhood vocabulary with your teacher.</p>
+                            </div>
+                        </div>
+                        <button onclick="speakWord()" id="speakBtn" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs font-bold flex items-center gap-1 hidden">
+                            <i class="fa-solid fa-volume-high"></i> PRONOUNCE
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function revealPlaceVocab(name, desc) {
+            document.getElementById('vocabTitle').innerText = name;
+            document.getElementById('vocabDesc').innerText = desc;
+            const btn = document.getElementById('speakBtn');
+            btn.classList.remove('hidden');
+            btn.onclick = () => playTextToSpeech(name);
+        }
+
+        function playTextToSpeech(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 3. SPEAKING SLIDE: GOOD OR NOT GOOD?
+        function renderSpeakingSlide(slide) {
+            const items = [
+                'a lot of shops', 'a football stadium', 'no shops or cafés',
+                'a supermarket', 'a lot of cafés & restaurants', 'a cinema',
+                'a sports centre', 'a museum'
+            ];
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 2 • Speaking</span>
+                        <h2 class="font-display font-extrabold text-2xl text-slate-900 mb-1">What makes a good neighbourhood?</h2>
+                        <p class="text-xs text-slate-600 mb-4">Click an item to discuss with the class: Is this good for a neighbourhood?</p>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+                            ${items.map((item, idx) => `
+                                <div id="speakingCard_${idx}" class="p-3 bg-white border border-slate-200 rounded-xl text-center shadow-sm flex flex-col justify-between">
+                                    <span class="font-semibold text-xs text-slate-800 my-2">${item}</span>
+                                    <div class="flex gap-1 mt-2">
+                                        <button onclick="voteSpeaking(${idx}, 'good')" class="flex-1 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded text-xs font-bold transition">GOOD 👍</button>
+                                        <button onclick="voteSpeaking(${idx}, 'not')" class="flex-1 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded text-xs font-bold transition">NOT 👎</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="speakingDiscussionPrompt" class="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🗣️</span>
+                            <div>
+                                <h4 class="font-bold text-sm text-amber-900">TEACHER PROMPT: "WHY?"</h4>
+                                <p class="text-xs text-amber-800">Prompt students to give reasons: <em>"It is good because..."</em> or <em>"It is not good because..."</em></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function voteSpeaking(cardIdx, type) {
+            const card = document.getElementById(`speakingCard_${cardIdx}`);
+            if (type === 'good') {
+                card.className = "p-3 bg-emerald-50 border-2 border-emerald-400 rounded-xl text-center shadow transition";
+            } else {
+                card.className = "p-3 bg-rose-50 border-2 border-rose-400 rounded-xl text-center shadow transition";
+            }
+        }
+
+        // 4. NEIGHBOURHOOD BUILDER SLIDE
+        function renderBuilderSlide(slide) {
+            const availableItems = [
+                { icon: '🏠', label: 'House' },
+                { icon: '🏫', label: 'School' },
+                { icon: '🏪', label: 'Shop' },
+                { icon: '🍽️', label: 'Restaurant' },
+                { icon: '☕', label: 'Café' },
+                { icon: '🌳', label: 'Park' },
+                { icon: '⚽', label: 'Sports Centre' },
+                { icon: '🏛️', label: 'Museum' }
+            ];
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 2 • Interactive Map Builder</span>
+                        <h2 class="font-display font-extrabold text-2xl text-slate-900 mb-2">Build Your Neighbourhood Map</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-2">
+                            <!-- Items Palette -->
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                <h3 class="text-xs font-bold text-slate-700 uppercase mb-3">1. Add Places to Map:</h3>
+                                <div class="grid grid-cols-2 gap-2">
+                                    ${availableItems.map(item => `
+                                        <button onclick="addToMap('${item.icon} ${item.label}')" class="p-2 bg-slate-100 hover:bg-blue-100 border border-slate-200 rounded-lg text-xs font-semibold flex items-center gap-2 transition">
+                                            <span>${item.icon}</span>
+                                            <span>${item.label}</span>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Map Canvas -->
+                            <div class="md:col-span-2 bg-emerald-100/60 border-2 border-dashed border-emerald-300 rounded-xl p-4 flex flex-col justify-between min-h-[220px]">
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-xs font-bold text-emerald-800">📍 OUR MAP CANVAS</span>
+                                        <button onclick="clearMap()" class="text-[10px] text-rose-600 hover:underline">Reset Map</button>
+                                    </div>
+                                    <div id="mapItemsContainer" class="flex flex-wrap gap-2">
+                                        ${builtNeighborhood.map(item => `
+                                            <span class="px-3 py-1.5 bg-white border border-emerald-200 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1">
+                                                ${item}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                                <!-- Sentence Frames -->
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 mt-4">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Sentence Frames:</span>
+                                    <p class="text-xs text-slate-800 font-medium italic mt-1">"There is a <u>park</u> near my house." • "My neighbourhood has a <u>school</u>."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addToMap(itemStr) {
+            builtNeighborhood.push(itemStr);
+            renderSlide();
+        }
+
+        function clearMap() {
+            builtNeighborhood = ['🏠 House'];
+            renderSlide();
+        }
+
+        // 5. READING INTRO SLIDE (ANITA & BLANCA TEXT)
+        function renderReadingIntroSlide(slide) {
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 3 • Reading</span>
+                                <h2 class="font-display font-extrabold text-2xl text-slate-900">Anita & Blanca's Neighbourhoods</h2>
+                            </div>
+                            <span class="text-xs bg-amber-100 text-amber-900 font-bold px-3 py-1 rounded-full">First Reading: Read Quickly</span>
+                        </div>
+
+                        <!-- Side-by-side Cambridge Text Passages -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-2">
+                            
+                            <!-- Anita Text -->
+                            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm relative">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">A</span>
+                                    <h3 class="font-bold text-sm text-slate-900">Anita's Neighbourhood</h3>
+                                </div>
+                                <p class="text-xs text-slate-700 leading-relaxed projector-contrast">
+                                    I live in a busy neighbourhood. There is a big supermarket 
+                                    <span class="bg-emerald-100 text-emerald-800 font-bold px-1 rounded">and</span> a bustling market where my family buys fresh food. It is lively, 
+                                    <span class="bg-amber-100 text-amber-800 font-bold px-1 rounded">but</span> it can be very noisy in the evening. There are many good restaurants, 
+                                    <span class="bg-blue-100 text-blue-800 font-bold px-1 rounded">so</span> we often eat dinner out on weekends.
+                                </p>
+                            </div>
+
+                            <!-- Blanca Text -->
+                            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm relative">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">B</span>
+                                    <h3 class="font-bold text-sm text-slate-900">Blanca's Neighbourhood</h3>
+                                </div>
+                                <p class="text-xs text-slate-700 leading-relaxed projector-contrast">
+                                    My neighbourhood is very quiet. There aren't many shops 
+                                    <span class="bg-emerald-100 text-emerald-800 font-bold px-1 rounded">and</span> big cafés, 
+                                    <span class="bg-amber-100 text-amber-800 font-bold px-1 rounded">but</span> there is a beautiful green park and a small library. I love reading, 
+                                    <span class="bg-blue-100 text-blue-800 font-bold px-1 rounded">so</span> I spend every Saturday at the library. It is peaceful, 
+                                    <span class="bg-blue-100 text-blue-800 font-bold px-1 rounded">so</span> my family really likes living here.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+                        <span class="text-xs font-semibold text-blue-900">🎯 FIRST READING MISSION: Read quickly. What places are mentioned in both texts?</span>
+                        <button onclick="nextSlide()" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-500 transition">
+                            READING CHECK →
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6. READING CHECK SLIDE
+        function renderReadingCheckSlide(slide) {
+            const questions = [
+                { q: '1. Who lives in a busy neighbourhood?', ans: "Anita lives in a busy neighbourhood." },
+                { q: '2. What places does Anita have near her home?', ans: "Supermarket, market, and restaurants." },
+                { q: '3. What does Blanca do every Saturday?', ans: "She spends every Saturday at the library." },
+                { q: '4. Why does Blanca\'s family like living there?', ans: "Because it is peaceful." }
+            ];
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 3 • Reading Check</span>
+                        <h2 class="font-display font-extrabold text-2xl text-slate-900 mb-4">Reading Comprehension Check</h2>
+
+                        <div class="space-y-3">
+                            ${questions.map((item, idx) => `
+                                <div class="p-3.5 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <span class="font-semibold text-xs text-slate-800">${item.q}</span>
+                                    <div id="ansContainer_${idx}">
+                                        <button onclick="revealReadingAnswer(${idx}, '${item.ans}')" class="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded text-xs font-bold transition flex items-center gap-1">
+                                            <span>THINK 🤔</span>
+                                            <span>REVEAL 🔎</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function revealReadingAnswer(idx, ansText) {
+            document.getElementById(`ansContainer_${idx}`).innerHTML = `
+                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 px-3 py-1 rounded-lg">
+                    ✓ ${ansText}
+                </span>
+            `;
+        }
+
+        // 7. GRAMMAR DETECTIVE SLIDE
+        function renderGrammarDetectiveSlide(slide) {
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 4 • Notice</span>
+                                <h2 class="font-display font-extrabold text-2xl text-slate-900">Grammar Detective 🔎</h2>
+                            </div>
+                            <span class="text-xs bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full">Spot the Linking Words</span>
+                        </div>
+
+                        <div class="space-y-3 my-2">
+                            <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                <p class="text-sm font-medium text-slate-800 leading-relaxed">
+                                    "There is a big supermarket <span class="px-2 py-0.5 bg-emerald-500 text-white font-extrabold rounded">AND</span> a bustling market."
+                                </p>
+                            </div>
+                            <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                <p class="text-sm font-medium text-slate-800 leading-relaxed">
+                                    "It is lively, <span class="px-2 py-0.5 bg-amber-500 text-white font-extrabold rounded">BUT</span> it can be very noisy in the evening."
+                                </p>
+                            </div>
+                            <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                <p class="text-sm font-medium text-slate-800 leading-relaxed">
+                                    "I love reading, <span class="px-2 py-0.5 bg-blue-500 text-white font-extrabold rounded">SO</span> I spend every Saturday at the library."
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-slate-900 text-white rounded-xl flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-xs text-amber-400">DETECTIVE QUESTION:</h4>
+                            <p class="text-xs text-slate-300">What job is each highlighted word doing in these sentences?</p>
+                        </div>
+                        <button onclick="nextSlide()" class="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-500 transition">
+                            DISCOVER RULES →
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 8, 9, 10. DISCOVER SLIDES (AND, BUT, SO)
+        function renderDiscoverSlide(slide) {
+            let badgeColor, word, concept, visual, example, translation;
+
+            if (slide.type === 'discover_and') {
+                badgeColor = 'bg-emerald-500';
+                word = 'AND';
+                concept = 'ADD AN IDEA';
+                visual = '🍽️ + ☕';
+                example = 'There are restaurants AND cafés.';
+                translation = 'TAMBAH';
+            } else if (slide.type === 'discover_but') {
+                badgeColor = 'bg-amber-500';
+                word = 'BUT';
+                concept = 'A DIFFERENT IDEA';
+                visual = 'small ↔️ beautiful';
+                example = 'My neighbourhood is small, BUT it is beautiful.';
+                translation = 'TAPI / BERBEDA';
+            } else {
+                badgeColor = 'bg-blue-500';
+                word = 'SO';
+                concept = 'RESULT / CONSEQUENCE';
+                visual = '😋 → 🍽️';
+                example = 'I am hungry, SO I eat at a restaurant.';
+                translation = 'JADI / AKIBAT';
+            }
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 5 • Discover</span>
+                        
+                        <div class="flex items-center space-x-3 my-3">
+                            <span class="px-4 py-1.5 ${badgeColor} text-white font-display font-extrabold text-2xl rounded-xl shadow">
+                                ${word}
+                            </span>
+                            <h2 class="font-display font-extrabold text-2xl text-slate-900">= ${concept}</h2>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 my-2">
+                            <div class="flex items-center justify-between border-b pb-3">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Visual Concept:</span>
+                                <span class="text-2xl font-bold">${visual}</span>
+                            </div>
+
+                            <div>
+                                <span class="text-xs font-bold text-slate-400 uppercase">Example Sentence:</span>
+                                <p class="text-lg font-bold text-slate-800 mt-1 projector-contrast">
+                                    "${example}"
+                                </p>
+                            </div>
+
+                            <div class="bg-slate-100 p-3 rounded-xl flex items-center justify-between">
+                                <span class="text-xs text-slate-600 font-semibold">Key Meaning (Bahasa Indonesia):</span>
+                                <span class="text-xs font-extrabold text-slate-900 uppercase bg-white px-3 py-1 rounded-lg border">${translation}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 11. GUIDED PRACTICE SLIDE
+        function renderPracticeSlide(slide) {
+            const exercises = [
+                { id: 1, sentence: 'I have a school ___ a park near my house.', ans: 'AND', reason: 'AND adds another place.' },
+                { id: 2, sentence: 'My neighbourhood is small ___ it is beautiful.', ans: 'BUT', reason: 'BUT connects two different/contrasting ideas.' },
+                { id: 3, sentence: 'There are not many shops ___ it is very quiet.', ans: 'SO', reason: 'SO shows the result or consequence.' }
+            ];
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 6 • Practice</span>
+                                <h2 class="font-display font-extrabold text-2xl text-slate-900">Guided Practice (Levels 1-3)</h2>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${exercises.map(ex => `
+                                <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+                                    <span class="font-bold text-sm text-slate-800">${ex.sentence}</span>
+                                    <div id="practiceOpts_${ex.id}" class="flex gap-1.5">
+                                        <button onclick="checkPractice(${ex.id}, 'AND', '${ex.ans}', '${ex.reason}')" class="px-3 py-1 bg-slate-100 hover:bg-emerald-100 text-slate-800 font-bold text-xs rounded border transition">AND</button>
+                                        <button onclick="checkPractice(${ex.id}, 'BUT', '${ex.ans}', '${ex.reason}')" class="px-3 py-1 bg-slate-100 hover:bg-amber-100 text-slate-800 font-bold text-xs rounded border transition">BUT</button>
+                                        <button onclick="checkPractice(${ex.id}, 'SO', '${ex.ans}', '${ex.reason}')" class="px-3 py-1 bg-slate-100 hover:bg-blue-100 text-slate-800 font-bold text-xs rounded border transition">SO</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkPractice(id, userChoice, correctAns, reason) {
+            const container = document.getElementById(`practiceOpts_${id}`);
+            if (userChoice === correctAns) {
+                container.innerHTML = `
+                    <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 px-3 py-1 rounded-lg">
+                        ✓ Correct! (${reason})
+                    </span>
+                `;
+            } else {
+                container.innerHTML += `
+                    <span class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-1 rounded">
+                        Try Again ↻
+                    </span>
+                `;
+            }
+        }
+
+        // 12. SENTENCE BUILDER SLIDE
+        function renderSentenceBuilderSlide(slide) {
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 6 • Sentence Builder</span>
+                        <h2 class="font-display font-extrabold text-2xl text-slate-900 mb-2">Assemble the Sentence 🧩</h2>
+                        <p class="text-xs text-slate-600 mb-4">Click words in the correct order to form a compound sentence:</p>
+
+                        <!-- Target Drop Area -->
+                        <div id="sentenceCanvas" class="p-4 bg-white border-2 border-dashed border-blue-300 rounded-xl min-h-[60px] flex flex-wrap gap-2 items-center mb-4">
+                            <span class="text-xs text-slate-400 italic" id="emptyCanvasHint">Click words below to assemble...</span>
+                        </div>
+
+                        <!-- Word Cards Pool -->
+                        <div id="wordBank" class="flex flex-wrap gap-2">
+                            <button onclick="addWordToSentence('I')" class="px-3 py-2 bg-slate-200 hover:bg-blue-200 rounded-lg text-xs font-bold text-slate-800 shadow-sm">I</button>
+                            <button onclick="addWordToSentence('like')" class="px-3 py-2 bg-slate-200 hover:bg-blue-200 rounded-lg text-xs font-bold text-slate-800 shadow-sm">like</button>
+                            <button onclick="addWordToSentence('my neighbourhood,')" class="px-3 py-2 bg-slate-200 hover:bg-blue-200 rounded-lg text-xs font-bold text-slate-800 shadow-sm">my neighbourhood,</button>
+                            <button onclick="addWordToSentence('but')" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 rounded-lg text-xs font-extrabold text-amber-900 shadow-sm">but</button>
+                            <button onclick="addWordToSentence('it')" class="px-3 py-2 bg-slate-200 hover:bg-blue-200 rounded-lg text-xs font-bold text-slate-800 shadow-sm">it</button>
+                            <button onclick="addWordToSentence('is')" class="px-3 py-2 bg-slate-200 hover:bg-blue-200 rounded-lg text-xs font-bold text-slate-800 shadow-sm">is</button>
+                            <button onclick="addWordToSentence('noisy.')" class="px-3 py-2 bg-slate-200 hover:bg-blue-200 rounded-lg text-xs font-bold text-slate-800 shadow-sm">noisy.</button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-4 border-t">
+                        <button onclick="resetSentenceBuilder()" class="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Reset ↻</button>
+                        <button onclick="checkSentenceBuilder()" class="px-5 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500 shadow">
+                            CHECK SENTENCE ✓
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        let assembledWords = [];
+
+        function addWordToSentence(word) {
+            assembledWords.push(word);
+            const canvas = document.getElementById('sentenceCanvas');
+            const hint = document.getElementById('emptyCanvasHint');
+            if (hint) hint.remove();
+
+            const wordSpan = document.createElement('span');
+            wordSpan.className = "px-3 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg shadow-sm";
+            wordSpan.innerText = word;
+            canvas.appendChild(wordSpan);
+        }
+
+        function resetSentenceBuilder() {
+            assembledWords = [];
+            renderSlide();
+        }
+
+        function checkSentenceBuilder() {
+            const result = assembledWords.join(' ');
+            if (result === 'I like my neighbourhood, but it is noisy.') {
+                confetti({ particleCount: 80, spread: 60 });
+                alert("✓ Correct Sentence Built!");
+            } else {
+                alert("Try ordering the words again!");
+            }
+        }
+
+        // 13. CLASS GAME SLIDE
+        function renderClassGameSlide(slide) {
+            const gameQuestions = [
+                { q: "My neighbourhood has a park ___ a sports centre.", options: ["AND", "BUT", "SO"], correct: "AND" },
+                { q: "It is very hot today, ___ I buy ice cream.", options: ["AND", "BUT", "SO"], correct: "SO" },
+                { q: "The café is small, ___ the coffee is delicious.", options: ["AND", "BUT", "SO"], correct: "BUT" }
+            ];
+
+            const q = gameQuestions[currentGameQuestion];
+
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-900 text-white rounded-2xl">
+                    <!-- Score Header -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Class Game Mode</span>
+                        
+                        <div class="flex items-center space-x-6">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-blue-400">TEAM A:</span>
+                                <span class="px-3 py-0.5 bg-blue-900 border border-blue-500 font-mono text-sm font-bold rounded">${teamAScore} ⭐</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-purple-400">TEAM B:</span>
+                                <span class="px-3 py-0.5 bg-purple-900 border border-purple-500 font-mono text-sm font-bold rounded">${teamBScore} ⭐</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question Stage -->
+                    <div class="my-auto text-center space-y-6">
+                        <span class="px-3 py-1 bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-full font-mono">
+                            Question ${currentGameQuestion + 1} of ${gameQuestions.length}
+                        </span>
+                        
+                        <h2 class="font-display font-bold text-2xl sm:text-3xl text-white projector-contrast">
+                            "${q.q}"
+                        </h2>
+
+                        <!-- Answers Grid -->
+                        <div class="flex justify-center gap-4">
+                            ${q.options.map(opt => `
+                                <button onclick="answerGame('${opt}', '${q.correct}')" class="px-6 py-3 bg-slate-800 hover:bg-blue-600 text-white font-extrabold text-base rounded-xl border border-slate-700 shadow-lg transition transform hover:scale-105">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Game Control Footer -->
+                    <div class="flex items-center justify-between border-t border-slate-800 pt-3">
+                        <button onclick="skipGameQuestion()" class="text-xs text-slate-400 hover:text-white">⏭ SKIP QUESTION</button>
+                        <span class="text-[10px] text-slate-500">Correct Answer = +10 ⭐</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function answerGame(selected, correct) {
+            if (selected === correct) {
+                confetti({ particleCount: 100, spread: 70 });
+                teamAScore += 10;
+                teamBScore += 10;
+            }
+            if (currentGameQuestion < 2) {
+                currentGameQuestion++;
+            } else {
+                currentGameQuestion = 0;
+            }
+            renderSlide();
+        }
+
+        function skipGameQuestion() {
+            currentGameQuestion = (currentGameQuestion + 1) % 3;
+            renderSlide();
+        }
+
+        // 14. PRODUCTION SLIDE (NOTEBOOK TASK)
+        function renderProductionSlide(slide) {
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 7 • Production</span>
+                                <h2 class="font-display font-extrabold text-2xl text-slate-900">Notebook Writing Task ✍️</h2>
+                            </div>
+                            <span class="text-xs bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full">Write in Notebook</span>
+                        </div>
+
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+                            <p class="text-xs font-bold text-amber-900">TASK INSTRUCTION:</p>
+                            <p class="text-xs text-amber-800">Write 3 sentences in your English notebook using AND, BUT, and SO based on your own neighbourhood.</p>
+                        </div>
+
+                        <!-- Scaffolding Frame Cards -->
+                        <div class="space-y-3">
+                            <div class="p-3 bg-white border border-emerald-300 rounded-xl">
+                                <span class="text-xs font-bold text-emerald-600">AND Frame:</span>
+                                <p class="text-sm font-semibold text-slate-800 mt-0.5">My neighbourhood has ________________ and ________________.</p>
+                            </div>
+                            <div class="p-3 bg-white border border-amber-300 rounded-xl">
+                                <span class="text-xs font-bold text-amber-600">BUT Frame:</span>
+                                <p class="text-sm font-semibold text-slate-800 mt-0.5">My neighbourhood is ________________, but ________________.</p>
+                            </div>
+                            <div class="p-3 bg-white border border-blue-300 rounded-xl">
+                                <span class="text-xs font-bold text-blue-600">SO Frame:</span>
+                                <p class="text-sm font-semibold text-slate-800 mt-0.5">There is ________________, so ________________.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 15. CHALLENGE SLIDE
+        function renderChallengeSlide(slide) {
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-900 text-white rounded-2xl">
+                    <div>
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Fast Finisher Mode</span>
+                        <h2 class="font-display font-extrabold text-2xl text-white mb-4">Challenge Mode 🔥</h2>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="p-3.5 bg-slate-800 border border-slate-700 rounded-xl">
+                                <span class="text-xs font-bold text-emerald-400">Challenge 1</span>
+                                <p class="text-xs text-slate-300 mt-1">Make your own sentence using <strong>AND</strong>.</p>
+                            </div>
+                            <div class="p-3.5 bg-slate-800 border border-slate-700 rounded-xl">
+                                <span class="text-xs font-bold text-amber-400">Challenge 2</span>
+                                <p class="text-xs text-slate-300 mt-1">Make your own sentence using <strong>BUT</strong>.</p>
+                            </div>
+                            <div class="p-3.5 bg-slate-800 border border-slate-700 rounded-xl">
+                                <span class="text-xs font-bold text-blue-400">Challenge 3</span>
+                                <p class="text-xs text-slate-300 mt-1">Make your own sentence using <strong>SO</strong>.</p>
+                            </div>
+                            <div class="p-3.5 bg-gradient-to-r from-purple-900 to-indigo-900 border border-purple-500/40 rounded-xl">
+                                <span class="text-xs font-bold text-purple-300">SUPER CHALLENGE ⭐</span>
+                                <p class="text-xs text-white mt-1">Write ONE sentence using TWO linking words!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 16. EXIT TICKET SLIDE
+        function renderExitTicketSlide(slide) {
+            return `
+                <div class="flex-1 p-6 md:p-8 flex flex-col justify-between bg-slate-50">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 8 • Reflection</span>
+                        <h2 class="font-display font-extrabold text-2xl text-slate-900 mb-3">Exit Ticket 🎟️</h2>
+
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3 mb-3">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase">Quick Recall:</h3>
+                            <div class="grid grid-cols-3 gap-2 text-center text-xs font-bold">
+                                <div class="p-2 bg-emerald-50 text-emerald-800 rounded border border-emerald-200">AND = ADD IDEA</div>
+                                <div class="p-2 bg-amber-50 text-amber-800 rounded border border-amber-200">BUT = CONTRAST</div>
+                                <div class="p-2 bg-blue-50 text-blue-800 rounded border border-blue-200">SO = RESULT</div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-blue-900 text-white rounded-xl shadow">
+                            <span class="text-xs font-bold text-blue-300">COMPLETE IN NOTEBOOK:</span>
+                            <p class="text-base font-bold mt-1">"My neighbourhood is ____________, but ____________."</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-3 border-t">
+                        <span class="text-xs text-slate-500">Great job today! 🎉 Lesson Complete.</span>
+                        <button onclick="goToSlide(0)" class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition">
+                            RESTART LESSON 🏠
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function updateCopilotScript() {
+            const slide = slideData[currentSlideIndex];
+            if (slide.copilot) {
+                document.getElementById('copilotScriptSay').innerText = `"${slide.copilot.say}"`;
+                document.getElementById('copilotScriptAsk').innerText = `"${slide.copilot.ask}"`;
+                document.getElementById('copilotScriptResponse').innerText = `"${slide.copilot.response}"`;
+                document.getElementById('copilotScriptStruggle').innerText = `"${slide.copilot.struggle}"`;
+            }
+        }
+
+        // Toggle Teacher Mode Drawer
+        function toggleTeacherDrawer() {
+            const drawer = document.getElementById('teacherDrawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        // Switch Tabs inside Teacher Drawer
+        function switchTeacherTab(tabName) {
+            document.getElementById('teacherTabOverview').classList.add('hidden');
+            document.getElementById('teacherTabScript').classList.add('hidden');
+            document.getElementById('teacherTabAssessment').classList.add('hidden');
+
+            document.getElementById('tabBtnOverview').className = "flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition";
+            document.getElementById('tabBtnScript').className = "flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition";
+            document.getElementById('tabBtnAssessment').className = "flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition";
+
+            if (tabName === 'overview') {
+                document.getElementById('teacherTabOverview').classList.remove('hidden');
+                document.getElementById('tabBtnOverview').className = "flex-1 py-2 rounded-lg bg-blue-600 text-white transition";
+            } else if (tabName === 'script') {
+                document.getElementById('teacherTabScript').classList.remove('hidden');
+                document.getElementById('tabBtnScript').className = "flex-1 py-2 rounded-lg bg-blue-600 text-white transition";
+            } else {
+                document.getElementById('teacherTabAssessment').classList.remove('hidden');
+                document.getElementById('tabBtnAssessment').className = "flex-1 py-2 rounded-lg bg-blue-600 text-white transition";
+            }
+        }
+
+        // Trigger Co-Pilot Modal Overlay
+        function triggerCopilotModal(type) {
+            const modal = document.getElementById('copilotModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const slide = slideData[currentSlideIndex];
+
+            if (type === 'say') {
+                title.innerText = "WHAT SHOULD I SAY?";
+                body.innerHTML = `<p class="font-bold text-blue-700 bg-blue-50 p-3 rounded-lg border">${slide.copilot.say}</p>`;
+            } else if (type === 'hint') {
+                title.innerText = "NEED A HINT / SCAFFOLDING?";
+                body.innerHTML = `<p class="font-bold text-amber-700 bg-amber-50 p-3 rounded-lg border">${slide.copilot.struggle}</p>`;
+            } else if (type === 'answer') {
+                title.innerText = "EXPECTED STUDENT RESPONSE";
+                body.innerHTML = `<p class="font-bold text-emerald-700 bg-emerald-50 p-3 rounded-lg border">${slide.copilot.response}</p>`;
+            } else if (type === 'notebook') {
+                title.innerText = "NOTEBOOK TASK INSTRUCTION";
+                body.innerHTML = `<p class="text-slate-800">Direct students to write answer in their notebooks. Allow 2-3 minutes silent writing time.</p>`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeCopilotModal() {
+            document.getElementById('copilotModal').classList.add('hidden');
+        }
+
+        // Listening Lock Modal
+        function openListeningModal() {
+            document.getElementById('listeningModal').classList.remove('hidden');
+        }
+
+        function closeListeningModal() {
+            document.getElementById('listeningModal').classList.add('hidden');
+        }
+
+        // Assessment Matrix Handlers
+        function setAssessment(linkingWord, rating) {
+            assessmentData[linkingWord] = rating;
+            evaluateAssessmentRecommendation();
+        }
+
+        function evaluateAssessmentRecommendation() {
+            const text = document.getElementById('assessmentStatusText');
+            if (assessmentData.and === 'good' && assessmentData.but === 'good' && assessmentData.so === 'good') {
+                text.className = "text-sm font-extrabold text-emerald-400 mt-1";
+                text.innerText = "READY TO MOVE ON TO NEXT LESSON";
+            } else {
+                text.className = "text-sm font-extrabold text-amber-400 mt-1";
+                text.innerText = "FURTHER GUIDED REVIEW RECOMMENDED";
+            }
+        }
+
+        // Timer Control Functions
+        function toggleTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                document.getElementById('timerBtn').innerHTML = `<i class="fa-solid fa-play"></i>`;
+            } else {
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+                    const secs = (timerSeconds % 60).toString().padStart(2, '0');
+                    document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
+                }, 1000);
+                document.getElementById('timerBtn').innerHTML = `<i class="fa-solid fa-pause"></i>`;
+            }
+            isTimerRunning = !isTimerRunning;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = 0;
+            document.getElementById('timerDisplay').innerText = "00:00";
+            document.getElementById('timerBtn').innerHTML = `<i class="fa-solid fa-play"></i>`;
+        }
+
+        function extendTime(mins) {
+            alert(`➕ Activity time extended by ${mins} minutes for class discussion.`);
+        }
+
+        function markActivityStatus(status) {
+            const badge = document.getElementById('activityStatusBadge');
+            if (status === 'completed') {
+                badge.className = "bg-emerald-950 text-emerald-300 px-2.5 py-1 rounded-md border border-emerald-800 font-bold";
+                badge.innerText = "✓ Completed";
+            } else {
+                badge.className = "bg-amber-950 text-amber-300 px-2.5 py-1 rounded-md border border-amber-800 font-bold";
+                badge.innerText = "↻ Repeating";
+            }
+        }
+    </script>
+</body>
+</html>
